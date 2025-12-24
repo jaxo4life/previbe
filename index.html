@@ -1,87 +1,53 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<title>Web 架构决策引擎 Pro</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<style>
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system;
-  background: #0b0d12;
-  color: #e5e7eb;
-}
-.app {
-  display: grid;
-  grid-template-columns: 380px 1fr;
-  height: 100vh;
-}
-.panel, .result {
-  padding: 24px;
-  overflow-y: auto;
-}
-.panel {
-  border-right: 1px solid #1f2937;
-}
-h1 { font-size: 20px; }
-h2 { font-size: 14px; color: #9ca3af; margin-top: 24px; }
-.option {
-  background: #111827;
-  border: 1px solid #1f2937;
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.option.active {
-  border-color: #6366f1;
-  background: #1e1b4b;
-}
-.card {
-  background: #020617;
-  border: 1px solid #1f2937;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-pre {
-  background: #020617;
-  padding: 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  overflow-x: auto;
-}
-button {
-  padding: 10px 14px;
-  background: #6366f1;
-  border: none;
-  color: #fff;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.score {
-  color: #a5b4fc;
-}
-</style>
-</head>
-<body>
+  <meta charset="UTF-8" />
+  <title>Web 架构决策助手 Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<div class="app">
-  <div class="panel" id="questions"></div>
-  <div class="result" id="output">
-    <h1>架构推荐</h1>
-    <p>请选择左侧问题</p>
-  </div>
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            bg: '#0b0d12'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-bg text-gray-100">
+<div class="min-h-screen flex flex-col md:flex-row">
+
+  <!-- 左侧问题区 -->
+  <aside class="md:w-96 w-full border-b md:border-b-0 md:border-r border-gray-800 p-4 overflow-y-auto">
+    <h1 class="text-xl font-semibold mb-4">架构决策</h1>
+    <div id="questions" class="space-y-6"></div>
+  </aside>
+
+  <!-- 右侧结果区 -->
+  <main class="flex-1 p-6 overflow-y-auto">
+    <div id="output" class="text-gray-400">
+      请在左侧完成所有问题选择
+    </div>
+  </main>
+
 </div>
 
 <script>
 /* ---------- 决策问题 ---------- */
 const questions = [
   { key: "seo", title: "SEO 重要性", options: ["核心", "一般", "不需要"] },
-  { key: "auth", title: "用户系统复杂度", options: ["无", "登录", "权限/多租户"] },
+  { key: "auth", title: "用户系统复杂度", options: ["无", "登录", "权限 / 多租户"] },
   { key: "server", title: "服务端职责", options: ["仅代理", "业务聚合", "核心逻辑"] },
   { key: "data", title: "数据敏感度", options: ["公开", "普通", "高度敏感"] },
-  { key: "perf", title: "性能/延迟要求", options: ["一般", "高", "极致"] },
+  { key: "perf", title: "性能 / 延迟要求", options: ["一般", "高", "极致"] },
   { key: "lifecycle", title: "项目周期", options: ["短期", "中期", "长期"] },
   { key: "team", title: "团队规模", options: ["个人", "小团队", "多人"] },
   { key: "ops", title: "运维能力", options: ["不想管", "基本", "专业"] }
@@ -89,89 +55,57 @@ const questions = [
 
 /* ---------- 架构模板 ---------- */
 const templates = {
-  A: {
-    name: "Pure SPA / Dashboard",
-    stack: "Vite + React + TS + Tailwind + Query",
-    desc: "极简、极速、前端主导"
-  },
-  B: {
-    name: "Static / Marketing",
-    stack: "Next.js SSG + Tailwind",
-    desc: "SEO 优先，内容驱动"
-  },
-  C: {
-    name: "Fullstack SaaS",
-    stack: "Next.js + Server Actions + DB + Auth",
-    desc: "产品级，全栈一体"
-  },
-  D: {
-    name: "Hybrid (Next + SPA)",
-    stack: "Next.js + Vite 子应用",
-    desc: "前台 SEO + 后台性能"
-  },
-  E: {
-    name: "API-first Decoupled",
-    stack: "Vite + Backend API",
-    desc: "前后端解耦"
-  },
-  F: {
-    name: "Edge-first Global",
-    stack: "Next.js Edge + KV",
-    desc: "全球低延迟"
-  },
-  G: {
-    name: "Internal Tool",
-    stack: "Vite + Auth + Admin UI",
-    desc: "内部系统"
-  },
-  H: {
-    name: "Fast Experiment",
-    stack: "Vite + Mock + Local DB",
-    desc: "快速试错"
-  }
+  A: { name: "Pure SPA / Dashboard", stack: "Vite + React + TS + Tailwind + Query" },
+  B: { name: "Static / Marketing", stack: "Next.js SSG + Tailwind" },
+  C: { name: "Fullstack SaaS", stack: "Next.js + Server Actions + DB + Auth" },
+  D: { name: "Hybrid (Next + SPA)", stack: "Next.js + Vite 子应用" },
+  E: { name: "API-first Decoupled", stack: "Vite + 独立 Backend API" },
+  F: { name: "Edge-first Global", stack: "Next.js Edge + KV / Cache" },
+  G: { name: "Internal Tool", stack: "Vite + Auth + Admin UI" },
+  H: { name: "Fast Experiment", stack: "Vite + Mock + Local DB" }
 };
 
 /* ---------- 评分规则 ---------- */
 const scoreRules = {
   seo: {
-    "核心":   { B: 3, C: 2, D: 2, F: 3 },
-    "一般":   { C: 1, D: 1 },
-    "不需要": { A: 2, G: 2, H: 2 }
+    "核心": { B:3, C:2, D:2, F:3 },
+    "一般": { C:1, D:1 },
+    "不需要": { A:2, G:2, H:2 }
   },
   auth: {
-    "无":       { A: 2, B: 1, H: 2 },
-    "登录":     { C: 2, G: 2 },
-    "权限/多租户": { C: 3, D: 2 }
+    "无": { A:2, B:1, H:2 },
+    "登录": { C:2, G:2 },
+    "权限 / 多租户": { C:3, D:2 }
   },
   server: {
-    "仅代理":   { A: 2, E: 2 },
-    "业务聚合": { C: 2, D: 2 },
-    "核心逻辑": { C: 3, F: 2 }
+    "仅代理": { A:2, E:2 },
+    "业务聚合": { C:2, D:2 },
+    "核心逻辑": { C:3, F:2 }
   },
   data: {
-    "公开":     { A: 2, B: 1 },
-    "普通":     { C: 1 },
-    "高度敏感": { C: 3, E: 2 }
+    "公开": { A:2, B:1 },
+    "普通": { C:1 },
+    "高度敏感": { C:3, E:2 }
   },
   perf: {
-    "一般": { C: 1 },
-    "高":   { A: 2, D: 2 },
-    "极致": { F: 3 }
+    "一般": { C:1 },
+    "高": { A:2, D:2 },
+    "极致": { F:3 }
   },
   lifecycle: {
-    "短期": { H: 3 },
-    "中期": { A: 1, G: 1 },
-    "长期": { C: 3, D: 2 }
+    "短期": { H:3 },
+    "中期": { A:1, G:1 },
+    "长期": { C:3, D:2 }
   },
   team: {
-    "个人": { A: 2, H: 2 },
-    "小团队": { C: 2 },
-    "多人": { D: 2, E: 2 }
+    "个人": { A:2, H:2 },
+    "小团队": { C:2 },
+    "多人": { D:2, E:2 }
   },
   ops: {
-    "不想管": { B: 2, C: 2 },
-    "基本": { C: 1 },
-    "专业": { E: 2, F: 2 }
+    "不想管": { B:2, C:2 },
+    "基本": { C:1 },
+    "专业": { E:2, F:2 }
   }
 };
 
@@ -181,23 +115,34 @@ const outEl = document.getElementById("output");
 
 /* ---------- 渲染问题 ---------- */
 questions.forEach(q => {
-  qEl.innerHTML += `<h2>${q.title}</h2>`;
+  const block = document.createElement("div");
+  block.innerHTML = `
+    <div class="text-sm text-gray-400 mb-2">${q.title}</div>
+    <div class="flex flex-wrap gap-2"></div>
+  `;
+  const optionsEl = block.querySelector("div:last-child");
+
   q.options.forEach(opt => {
-    const div = document.createElement("div");
-    div.className = "option";
-    div.textContent = opt;
-    div.onclick = () => {
+    const btn = document.createElement("button");
+    btn.textContent = opt;
+    btn.className =
+      "px-3 py-1.5 rounded border border-gray-700 text-sm " +
+      "hover:border-indigo-500 transition";
+    btn.onclick = () => {
       state[q.key] = opt;
-      [...div.parentNode.querySelectorAll(".option")]
-        .forEach(o => o.classList.remove("active"));
-      div.classList.add("active");
+      [...optionsEl.children].forEach(b =>
+        b.classList.remove("bg-indigo-600","border-indigo-500")
+      );
+      btn.classList.add("bg-indigo-600","border-indigo-500");
       render();
     };
-    qEl.appendChild(div);
+    optionsEl.appendChild(btn);
   });
+
+  qEl.appendChild(block);
 });
 
-/* ---------- 计算 & 输出 ---------- */
+/* ---------- 计算结果 ---------- */
 function render() {
   if (Object.keys(state).length < questions.length) return;
 
@@ -205,50 +150,33 @@ function render() {
   Object.keys(templates).forEach(k => scores[k] = 0);
 
   for (const key in state) {
-    const rules = scoreRules[key][state[key]] || {};
-    for (const t in rules) scores[t] += rules[t];
+    const rule = scoreRules[key][state[key]] || {};
+    for (const t in rule) scores[t] += rule[t];
   }
 
-  const ranked = Object.entries(scores)
-    .sort((a,b) => b[1] - a[1]);
-
+  const ranked = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
   const [best, second] = ranked;
 
   outEl.innerHTML = `
-    <h1>推荐主方案：${templates[best[0]].name}</h1>
-    <div class="card">
-      <b>技术栈：</b>${templates[best[0]].stack}<br/>
-      <span class="score">评分：${best[1]}</span><br/>
-      ${templates[best[0]].desc}
-    </div>
+    <h2 class="text-xl font-semibold mb-2">
+      推荐方案：${templates[best[0]].name}
+    </h2>
+    <p class="text-gray-300 mb-4">${templates[best[0]].stack}</p>
 
-    <h2>备选方案</h2>
-    <div class="card">
-      ${templates[second[0]].name}<br/>
-      <span class="score">评分：${second[1]}</span>
-    </div>
+    <div class="text-sm text-gray-400 mb-2">备选方案</div>
+    <div class="mb-6">${templates[second[0]].name}</div>
 
-    <h2>AI Prompt</h2>
-    <pre>
+    <div class="text-sm text-gray-400 mb-2">AI Prompt</div>
+    <pre class="bg-black/40 p-4 rounded text-xs overflow-x-auto">
 你是一个资深 Web 架构师。
-请基于以下需求设计完整架构：
+需求如下：
+${Object.entries(state).map(([k,v])=>`${k}: ${v}`).join("\n")}
 
-${Object.entries(state).map(([k,v]) => `${k}: ${v}`).join("\n")}
-
-推荐主架构：${templates[best[0]].name}
-请给出：
-- 架构设计说明
-- 目录结构
-- 数据流
-- 状态管理
-- 部署方案
+请基于 ${templates[best[0]].name}
+给出完整架构、目录结构、数据流和部署建议。
     </pre>
-    <button onclick="navigator.clipboard.writeText(document.querySelector('pre').innerText)">
-      复制 Prompt
-    </button>
   `;
 }
 </script>
-
 </body>
 </html>
