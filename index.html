@@ -2,151 +2,124 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<title>AI 架构决策 & Prompt 合同生成器</title>
+<title>AI 合同生成器 · 专业级 Prompt</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-slate-950 text-slate-100">
-<div class="max-w-5xl mx-auto px-4 py-10 space-y-12">
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+<div class="max-w-4xl mx-auto px-4 py-10 space-y-12">
 
+<!-- Header -->
 <header class="space-y-3">
-<h1 class="text-3xl font-bold">AI 架构决策 & 开发合同生成器</h1>
-<p class="text-slate-400 text-sm">
-用<strong>权重 + 规则 + 专业 Prompt</strong>，把 AI 变成你的首席架构师
-</p>
+  <h1 class="text-3xl font-bold tracking-tight">AI 合同生成器</h1>
+  <p class="text-slate-400 text-sm leading-relaxed">
+    用<strong>AI 最舒服、最高效、最不容易跑偏</strong>的方式，  
+    把你的想法翻译成一份真正能用的专业 Prompt
+  </p>
 </header>
 
-<!-- 项目介绍 -->
-<section class="space-y-3">
-<h2 class="text-xl font-semibold">① 项目介绍（必填）</h2>
-<textarea id="projectDesc"
-class="w-full min-h-[140px] bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500"
-placeholder="说明：这是一个什么项目？解决什么问题？目标用户是谁？核心价值是什么？"></textarea>
-<p class="text-xs text-slate-400">
-建议包含：业务目标 / 用户画像 / 是否长期维护 / 成功标准
-</p>
-</section>
-
-<!-- 权重滑块 -->
-<section class="space-y-6">
-<h2 class="text-xl font-semibold">② 关键决策权重</h2>
-
-<div id="sliders" class="grid grid-cols-1 sm:grid-cols-2 gap-6"></div>
-</section>
-
-<!-- 结果 -->
+<!-- 项目描述 -->
 <section class="space-y-4">
-<h2 class="text-xl font-semibold">③ 架构推荐结果</h2>
-<div id="result"
-class="bg-slate-900 border border-slate-700 rounded-lg p-4 text-sm text-slate-300">
-请调整权重
-</div>
+  <h2 class="text-xl font-semibold">① 项目描述（原始想法）</h2>
+  <textarea id="projectDesc"
+    class="w-full min-h-[160px] rounded-lg bg-slate-900 border border-slate-700 p-4 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-500"
+    placeholder="用你自己的话描述你想做的项目，不需要专业，但请真实。"></textarea>
+
+  <div class="text-xs text-slate-400 leading-relaxed space-y-1">
+    <p>高质量描述建议（不必全写，但越多越好）：</p>
+    <ul class="list-disc list-inside">
+      <li>这是一个什么类型的项目？（网站 / 工具 / 产品 / Demo）</li>
+      <li>主要解决什么问题？</li>
+      <li>目标用户是谁？（普通用户 / 开发者 / 专业用户）</li>
+      <li>你最在意的是什么？（速度 / 质量 / 可扩展 / 视觉 / 成本）</li>
+      <li>是一次性项目，还是长期维护？</li>
+    </ul>
+  </div>
 </section>
 
-<!-- Prompt -->
+<!-- 输出 Prompt -->
 <section class="space-y-4">
-<h2 class="text-xl font-semibold">④ AI 架构合同（Prompt）</h2>
-<textarea id="prompt" readonly
-class="w-full min-h-[360px] bg-slate-900 border border-slate-700 rounded-lg p-4 text-xs leading-relaxed"></textarea>
+  <h2 class="text-xl font-semibold">② AI 合同（直接复制给 AI）</h2>
+
+  <textarea id="prompt"
+    readonly
+    class="w-full min-h-[520px] rounded-lg bg-slate-900 border border-slate-700 p-4 text-xs leading-relaxed text-slate-200"></textarea>
+
+  <p class="text-xs text-slate-400">
+    使用方式：<strong>整体复制 → 直接发给 AI → 不要再额外解释</strong>
+  </p>
 </section>
 
 </div>
 
 <script>
-/* ===== 权重定义 ===== */
-const factors = [
-  { key: "seo", label: "SEO / 搜索引擎重要性" },
-  { key: "perf", label: "性能 & 首屏速度" },
-  { key: "ux", label: "复杂交互 / 动效" },
-  { key: "speed", label: "开发 & 迭代速度" },
-  { key: "maintain", label: "长期维护 & 扩展" },
-  { key: "backend", label: "后端复杂度" }
-]
+const projectInput = document.getElementById("projectDesc")
+const promptOutput = document.getElementById("prompt")
 
-/* ===== 架构方案 ===== */
-const stacks = {
-  "Next.js App Router + Server Actions": { seo:5, perf:4, ux:4, speed:3, maintain:5, backend:5 },
-  "Next.js + Tailwind（传统 SSR）": { seo:4, perf:4, ux:3, speed:3, maintain:4, backend:4 },
-  "Vite + React SPA": { seo:1, perf:4, ux:5, speed:5, maintain:3, backend:1 },
-  "Vite + React + BFF": { seo:2, perf:4, ux:5, speed:4, maintain:4, backend:4 },
-  "Astro + Islands": { seo:5, perf:5, ux:2, speed:4, maintain:4, backend:2 },
-  "纯前端静态站（CDN）": { seo:3, perf:5, ux:2, speed:5, maintain:2, backend:0 },
-  "全栈单体（Next + DB）": { seo:4, perf:3, ux:4, speed:3, maintain:4, backend:5 },
-  "前后端分离（API + SPA）": { seo:2, perf:4, ux:5, speed:4, maintain:4, backend:5 }
-}
+projectInput.addEventListener("input", buildPrompt)
 
-/* ===== 渲染滑块 ===== */
-const sliders = document.getElementById("sliders")
-const values = {}
+function buildPrompt() {
+  const desc = projectInput.value || "（用户尚未完整描述项目，请根据以下合同主动梳理与补全）"
 
-factors.forEach(f => {
-  values[f.key] = 3
-  sliders.innerHTML += `
-  <div>
-    <label class="text-sm">${f.label}: <span id="${f.key}-v">3</span></label>
-    <input type="range" min="0" max="5" value="3"
-      class="w-full mt-2"
-      oninput="update('${f.key}', this.value)">
-  </div>`
-})
+  promptOutput.value = `
+你现在的身份是：  
+**首席软件架构师 + 资深产品工程负责人 + 强工程实践导向的技术顾问**。
 
-function update(key, val) {
-  values[key] = Number(val)
-  document.getElementById(key + "-v").innerText = val
-  calculate()
-}
+你正在为一个「真实项目」提供方案，而不是写示例或教学内容。
 
-/* ===== 计算 ===== */
-function calculate() {
-  let scored = Object.entries(stacks).map(([name, w]) => {
-    let score = 0
-    for (const k in values) score += values[k] * w[k]
-    return { name, score }
-  }).sort((a,b)=>b.score-a.score)
-
-  if (!scored[0]) return
-
-  document.getElementById("result").innerHTML =
-    `<strong class="text-indigo-400">${scored[0].name}</strong><br/>综合评分：${scored[0].score}`
-
-  buildPrompt(scored)
-}
-
-/* ===== Prompt ===== */
-function buildPrompt(list) {
-  const desc = document.getElementById("projectDesc").value || "（未填写）"
-  document.getElementById("prompt").value = `
-你是一名资深首席前端架构师 + 全栈技术负责人。
-
-【项目背景】
+────────────────────────
+【项目原始描述】
 ${desc}
 
-【我的真实诉求】
-我不是在做 Demo，而是一个需要权衡长期维护、性能、开发效率的真实项目。
+────────────────────────
+【你的任务目标】
+请基于以上描述，输出一个**高质量、可落地、可执行**的完整方案，而不是泛泛而谈的建议。
 
-【推荐主架构】
-${list[0].name}
+如果信息存在模糊或缺失，你需要：
+- 合理推断
+- 明确说明你的假设
+- 给出多个可选方向并说明取舍
 
-【备选方案】
-${list.slice(1,3).map(i=>i.name).join(" / ")}
+────────────────────────
+【你必须覆盖的内容】
 
-【请你必须覆盖的内容】
-1. 架构整体设计（数据流 / 渲染策略）
-2. 目录结构与模块拆分
-3. 状态管理 & 请求策略
-4. 性能优化关键点
-5. 可扩展性与未来演进路径
-6. 不建议采用的方案 & 原因
-7. 初始落地步骤（第一周我该干什么）
+1️⃣ 项目理解  
+- 你如何理解这个项目？
+- 核心目标是什么？
+- 成功标准是什么？
 
-【回答风格要求】
-- 工程化
-- 有取舍理由
-- 不泛泛而谈
-- 像在给真实团队做技术决策
+2️⃣ 整体方案设计  
+- 总体架构思路
+- 核心模块拆分
+- 数据流与状态流设计
 
-请直接进入专家模式回答。
+3️⃣ 技术选型与理由  
+- 每一个关键技术选择，都请说明「为什么」
+- 如果有替代方案，请说明「为什么不选」
+
+4️⃣ 开发阶段规划  
+- 第一阶段（最小可行）
+- 后续可扩展方向
+- 哪些事情可以延后，哪些不能
+
+5️⃣ 风险与边界  
+- 这个方案最容易踩的坑
+- 明确哪些需求不建议一开始就做
+- 成本 / 复杂度 / 维护风险
+
+────────────────────────
+【输出风格强约束】
+
+- 不要写教程
+- 不要解释基础概念
+- 不要使用营销语言
+- 不要给“看起来很全面但无法执行”的答案
+
+请像在**真实工作中给真实团队做技术决策**一样回答。
+如果你认为某些需求本身不合理，请直接指出并给出更优解。
+
+直接开始你的方案。
 `.trim()
 }
 </script>
